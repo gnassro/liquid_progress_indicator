@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:liquid_progress_indicator/src/wave.dart';
+import 'package:liquid_progress_indicator/src/waves_option.dart';
 
 const double _twoPi = math.pi * 2.0;
 const double _epsilon = .001;
@@ -20,32 +21,28 @@ class LiquidCircularProgressIndicator extends ProgressIndicator {
   ///The direction the liquid travels.
   final Axis direction;
 
+  final List<WavesOptions> wavesOptions;
+
+
   LiquidCircularProgressIndicator({
     Key? key,
     double value = 0.5,
     Color? backgroundColor,
-    Animation<Color>? valueColor,
     this.borderWidth,
     this.borderColor,
     this.center,
     this.direction = Axis.vertical,
+    required this.wavesOptions
   }) : super(
           key: key,
           value: value,
           backgroundColor: backgroundColor,
-          valueColor: valueColor,
         ) {
     if (borderWidth != null && borderColor == null ||
         borderColor != null && borderWidth == null) {
       throw ArgumentError("borderWidth and borderColor should both be set.");
     }
   }
-
-  Color _getBackgroundColor(BuildContext context) =>
-      backgroundColor ?? Theme.of(context).backgroundColor;
-
-  Color _getValueColor(BuildContext context) =>
-      valueColor?.value ?? Theme.of(context).accentColor;
 
   @override
   State<StatefulWidget> createState() =>
@@ -60,7 +57,7 @@ class _LiquidCircularProgressIndicatorState
       clipper: _CircleClipper(),
       child: CustomPaint(
         painter: _CirclePainter(
-          color: widget._getBackgroundColor(context),
+          color: widget.backgroundColor ?? Theme.of(context).colorScheme.background,
         ),
         foregroundPainter: _CircleBorderPainter(
           color: widget.borderColor,
@@ -68,11 +65,14 @@ class _LiquidCircularProgressIndicatorState
         ),
         child: Stack(
           children: [
-            Wave(
-              value: widget.value,
-              color: widget._getValueColor(context),
-              direction: widget.direction,
-            ),
+            ...widget.wavesOptions.map((waveOptions) {
+              return Wave(
+                value: widget.value,
+                color: waveOptions.waveColor,
+                wavesOptions: waveOptions,
+                direction: widget.direction,
+              );
+            }),
             if (widget.center != null) Center(child: widget.center),
           ],
         ),

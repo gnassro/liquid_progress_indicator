@@ -1,17 +1,20 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:liquid_progress_indicator/liquid_progress_indicator.dart';
 
 class Wave extends StatefulWidget {
   final double? value;
-  final Color color;
+  final Color? color;
   final Axis direction;
+  final WavesOptions? wavesOptions;
 
   const Wave({
     Key? key,
     required this.value,
     required this.color,
     required this.direction,
+    this.wavesOptions
   }) : super(key: key);
 
   @override
@@ -24,12 +27,30 @@ class _WaveState extends State<Wave> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-
     _animationController = AnimationController(
-      vsync: this,
-      duration: Duration(seconds: 2),
+        vsync: this
     );
-    _animationController.repeat();
+    _updateAnimation();
+  }
+
+  @override
+  void didUpdateWidget(covariant Wave oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _updateAnimation();
+  }
+
+  void _updateAnimation() {
+    _animationController..duration = widget.wavesOptions?.waveDuration;
+    _animationController..reverseDuration = widget.wavesOptions?.waveDuration;
+    if (widget.wavesOptions?.isReverse ?? false) {
+      _animationController.repeat();
+      _animationController.reverse();
+    }
+    else {
+      _animationController.forward();
+      _animationController.repeat();
+    }
+
   }
 
   @override
@@ -43,11 +64,15 @@ class _WaveState extends State<Wave> with SingleTickerProviderStateMixin {
     return AnimatedBuilder(
       animation: CurvedAnimation(
         parent: _animationController,
-        curve: Curves.easeInOut,
+        curve: Curves.elasticIn,
+        reverseCurve: Curves.elasticOut,
       ),
       builder: (context, child) => ClipPath(
         child: Container(
-          color: widget.color,
+            decoration: BoxDecoration(
+              color: widget.wavesOptions?.waveColor,
+              gradient: widget.wavesOptions?.gradient,
+            )
         ),
         clipper: _WaveClipper(
           animationValue: _animationController.value,
