@@ -57,7 +57,7 @@ class _LiquidCircularProgressIndicatorState
       clipper: _CircleClipper(),
       child: CustomPaint(
         painter: _CirclePainter(
-          color: widget.backgroundColor ?? Theme.of(context).colorScheme.background,
+          color: widget.backgroundColor ?? Theme.of(context).colorScheme.surface,
         ),
         foregroundPainter: _CircleBorderPainter(
           color: widget.borderColor,
