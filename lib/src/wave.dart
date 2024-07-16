@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:liquid_progress_indicator/liquid_progress_indicator.dart';
 
 class Wave extends StatefulWidget {
-  final double? value;
+  final double value;
   final Color? color;
   final Axis direction;
   final WavesOptions? wavesOptions;
@@ -21,14 +21,21 @@ class Wave extends StatefulWidget {
   _WaveState createState() => _WaveState();
 }
 
-class _WaveState extends State<Wave> with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
+class _WaveState extends State<Wave> with TickerProviderStateMixin {
+
+  late AnimationController _waveAnimationController;
+
+  late AnimationController _valueAnimationController;
 
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
+    _waveAnimationController = AnimationController(
         vsync: this
+    );
+    _valueAnimationController = AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 300)
     );
     _updateAnimation();
   }
@@ -39,23 +46,18 @@ class _WaveState extends State<Wave> with SingleTickerProviderStateMixin {
     _updateAnimation();
   }
 
-  void _updateAnimation() {
-    _animationController..duration = widget.wavesOptions?.waveDuration;
-    _animationController..reverseDuration = widget.wavesOptions?.waveDuration;
-    if (widget.wavesOptions?.isReverse ?? false) {
-      _animationController.repeat();
-      _animationController.reverse();
-    }
-    else {
-      _animationController.forward();
-      _animationController.repeat();
-    }
-
+  void _updateAnimation() async {
+    _valueAnimationController.animateTo(widget.value, duration: Duration(milliseconds: 300));
+    _waveAnimationController..duration = widget.wavesOptions?.waveDuration;
+    _waveAnimationController..reverseDuration = widget.wavesOptions?.waveDuration;
+    await _waveAnimationController.forward();
+    _waveAnimationController.repeat();
   }
 
   @override
   void dispose() {
-    _animationController.dispose();
+    _valueAnimationController.dispose();
+    _waveAnimationController.dispose();
     super.dispose();
   }
 
@@ -63,21 +65,24 @@ class _WaveState extends State<Wave> with SingleTickerProviderStateMixin {
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: CurvedAnimation(
-        parent: _animationController,
+        parent: _waveAnimationController,
         curve: Curves.elasticIn,
         reverseCurve: Curves.elasticOut,
       ),
-      builder: (context, child) => ClipPath(
-        child: Container(
-            decoration: BoxDecoration(
-              color: widget.wavesOptions?.waveColor,
-              gradient: widget.wavesOptions?.gradient,
-            )
-        ),
-        clipper: _WaveClipper(
-          animationValue: _animationController.value,
-          value: widget.value,
-          direction: widget.direction,
+      builder: (context, child) => Transform.scale(
+        scaleX: (widget.wavesOptions?.isReverse ?? false) ? -1 : 1,
+        child: ClipPath(
+          child: Container(
+              decoration: BoxDecoration(
+                color: widget.wavesOptions?.waveColor,
+                gradient: widget.wavesOptions?.gradient,
+              )
+          ),
+          clipper: _WaveClipper(
+            animationValue: _waveAnimationController.value,
+            value: _valueAnimationController.value,
+            direction: widget.direction,
+          ),
         ),
       ),
     );

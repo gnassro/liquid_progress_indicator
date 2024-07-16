@@ -67,7 +67,7 @@ class _LiquidCircularProgressIndicatorState
           children: [
             ...widget.wavesOptions.map((waveOptions) {
               return Wave(
-                value: widget.value,
+                value: widget.value!,
                 color: waveOptions.waveColor,
                 wavesOptions: waveOptions,
                 direction: widget.direction,

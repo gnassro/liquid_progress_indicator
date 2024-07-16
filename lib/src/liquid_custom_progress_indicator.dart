@@ -59,7 +59,7 @@ class _LiquidCustomProgressIndicatorState
                 left: pathBounds.left,
                 top: pathBounds.top,
                 child: Wave(
-                  value: widget.value,
+                  value: widget.value!,
                   color: widget._getValueColor(context),
                   direction: widget.direction,
                 ),

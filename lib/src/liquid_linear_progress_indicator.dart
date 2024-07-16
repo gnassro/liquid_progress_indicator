@@ -70,7 +70,7 @@ class _LiquidLinearProgressIndicatorState
         child: Stack(
           children: <Widget>[
             Wave(
-              value: widget.value,
+              value: widget.value!,
               color: widget._getValueColor(context),
               direction: widget.direction,
             ),
